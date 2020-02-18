@@ -1,0 +1,47 @@
+;LAB_2
+;PROBLEM 1: WRITE A 8086 ASSEMBLY PROGRAM TO:
+;1. DISPLAY A "?"
+;2. READ 2 DECIMAL DIGITS WHOSE SUM IS LESS THAN 10
+;3. DISPLAY THOSE 2 DIGITS AND THEIR SUM WITH AN APPROPRIATE MESSAGE
+
+.MODEL SMALL
+.STACK 100H
+.DATA
+MSG1 DB "? $"
+MSG2 DB 0DH, 0AH, "THE SUM OF "
+DIG1 DB ?, " AND "
+DIG2 DB ?, " IS "
+RESULT DB ?, "$"  
+
+.CODE
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+    
+    LEA DX, MSG1
+    MOV AH, 09
+    INT 21H
+    
+    MOV AH, 01
+    INT 21H 
+    MOV DIG1, AL    ;we want to save the ascii value to the varialbe
+    SUB AL, 30H     ;convert to decimal
+    MOV BL, AL
+    INT 21H
+    MOV DIG2, AL
+    SUB AL, 30H
+    
+    
+    ADD BL, AL 
+    ADD BL, 30H
+    MOV RESULT, BL
+    
+    LEA DX, MSG2
+    MOV AH, 09
+    INT 21H
+    
+    MOV AH, 4CH
+    INT 21H
+    MAIN ENDP
+END MAIN 
+
