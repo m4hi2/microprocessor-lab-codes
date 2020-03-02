@@ -1,0 +1,112 @@
+.MODEL SMALL
+.STACK 100H
+.DATA
+MSG1 DB 'ENTER TEMPERATURE IN FARENHEIT: $'
+MSG2 DB 0DH, 0AH, 'THE TEMPERATURE YOU ENTERED: $'
+COUNTER DB 0
+R DW 10
+MSG3 DB 0DH, 0AH, 'TEMPERATURE IN CELCIUS: $'
+RESULT DB ?, '$'
+
+.CODE 
+MAIN PROC
+    MOV AX, @DATA
+    MOV DS, AX
+    
+    MOV BX, 0 
+    
+    MOV AH, 09
+    LEA DX, MSG1
+    INT 21H     
+    
+    INPUT: 
+    MOV AH, 01
+    INT 21H
+    CMP AL, 13D
+    JNE STORE_IN_REGISTER
+    JE  REGISTER_TO_MEMORY 
+    
+    STORE_IN_REGISTER:
+    SUB AL, 30H   
+    MOV CX, 0
+    MOV CL, AL
+    MOV AX, BX
+    MUL R
+    ADD AX, CX
+    MOV BX, AX 
+    MOV CX, BX
+    JMP INPUT
+    
+    REGISTER_TO_MEMORY:
+    MOV DX, 0
+    MOV AX, BX
+    DIV R
+    INC COUNTER
+    PUSH DX
+    MOV BX, AX
+    CMP AX, 0
+    JE  PRINTING_MESSAGE 
+    JNE REGISTER_TO_MEMORY
+    
+    PRINTING_MESSAGE:
+    MOV AH, 09
+    LEA DX, MSG2
+    INT 21H
+    JMP PRINT_TEMP
+    
+    PRINT_TEMP: 
+    POP DX
+    ADD DL, 30H
+    MOV AH, 02
+    INT 21H
+    DEC COUNTER 
+    CMP COUNTER, 0
+    JNE PRINT_TEMP
+    JE CALCULATE
+    
+    CALCULATE:
+    MOV AX, CX
+    SUB AX, 032
+    MOV CL, 05
+    MUL CL
+    MOV CL, 09 
+    DIV CL
+    MOV AH, 00
+    MOV BX, AX
+    
+    MOV AH, 09
+    LEA DX, MSG3
+    INT 21H  
+    MOV COUNTER, 0
+     
+    REG2MEM: 
+    MOV DX, 0
+    MOV AX, BX
+    DIV R
+    PUSH DX       
+    INC COUNTER
+    MOV BX, AX
+    CMP AX, 0
+    JE PRINT
+    JNE REG2MEM
+    
+    PRINT:
+    POP DX
+    ADD DL, 30H
+    MOV AH, 02
+    INT 21H
+    DEC COUNTER
+    CMP COUNTER, 0
+    JNE PRINT
+    JE EXIT
+    
+    EXIT: 
+    MOV AH, 04CH
+    INT 21H
+    
+    MAIN ENDP
+END MAIN
+    
+    
+    
+    
